@@ -7,14 +7,28 @@
 --  rules.
 
 module Rattus.Primitives
-  (O
+ {- (O
   ,Box
   ,delay
   ,adv
   ,box
   ,unbox
   ,Stable
-  ) where
+  )-} where
+
+import Data.Set (Set)
+
+-- Input Channel identifier
+type Input = Int
+
+
+type Clock = Set Input 
+
+-- An value that arrived on an input channel (Event)
+type InputValue = (Input, Value)
+
+-- Different kinds of Values to arrive on an input channel
+data Value = IntValue Int | CharValue Char | BoolValue Bool
 
 
 -- | A type is @Stable@ if it is a strict type and the later modality
@@ -32,7 +46,10 @@ class  Stable a  where
 -- | The "later" type modality. A value of type @O a@ is a computation
 -- that produces a value of type @a@ in the next time step. Use
 -- 'delay' and 'adv' to construct and consume 'O'-types.
-data O a = Delay a
+
+-- Delay includes a clock and a function to evalute the term depending on
+-- wether its a variable or an input channel
+data O a = Delay Clock (InputValue -> a)
 
 -- | The "stable" type modality. A value of type @Box a@ is a
 -- time-independent computation that produces a value of type @a@.
@@ -47,9 +64,7 @@ data Box a = Box a
 --
 {-# INLINE [1] delay #-}
 delay :: a -> O a
-delay x = Delay x
-
-
+delay x = Delay undefined (const x) 
 
 -- | This is the eliminator for the "later" modality 'O':
 --
@@ -59,8 +74,10 @@ delay x = Delay x
 --
 {-# INLINE [1] adv #-}
 adv :: O a -> a
-adv (Delay x) = x
+adv x = adv' undefined x
 
+adv' :: InputValue -> O a -> a
+adv' input (Delay clock f) = f input
 
 -- | This is the constructor for the "stable" modality 'Box':
 --
