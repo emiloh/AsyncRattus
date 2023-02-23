@@ -21,7 +21,6 @@ import Data.Set (Set)
 -- Input Channel identifier
 type Input = Int
 
-
 type Clock = Set Input 
 
 -- An value that arrived on an input channel (Event)
@@ -29,6 +28,8 @@ type InputValue = (Input, Value)
 
 -- Different kinds of Values to arrive on an input channel
 data Value = IntValue Int | CharValue Char | BoolValue Bool
+
+data InputChannel = Indentifier String
 
 
 -- | A type is @Stable@ if it is a strict type and the later modality
